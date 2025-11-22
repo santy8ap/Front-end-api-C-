@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { InstanceService } from '../../services/instance.service';
 import { DatabaseInstance } from '../../types/instance.types';
-import { Card } from '../../components/ui/Card';
 import Link from 'next/link';
 import { ROUTES } from '../../utils/constants';
+import { motion } from 'framer-motion';
+import { FaBolt, FaHistory, FaDatabase, FaCheckCircle } from 'react-icons/fa';
+import { HiOutlineCircleStack, HiOutlineCommandLine } from 'react-icons/hi2';
 
 export default function StudentDashboard() {
     const user = useAuthStore((state) => state.user);
@@ -24,88 +26,150 @@ export default function StudentDashboard() {
                 setInstances(data);
             }
         } catch (error) {
-            console.error('Error al cargar instancias:', error);
+            console.error('Error loading instances:', error);
         } finally {
             setIsLoading(false);
         }
     };
 
+    const quickActions = [
+        {
+            title: 'Execute Query',
+            description: 'Run SQL queries in real-time',
+            icon: <FaBolt />,
+            href: ROUTES.STUDENT_EXECUTE,
+            color: 'from-cyan-500 to-blue-600',
+            stats: '24 today',
+        },
+        {
+            title: 'Query History',
+            description: 'View your past queries',
+            icon: <FaHistory />,
+            href: ROUTES.STUDENT_QUERIES,
+            color: 'from-green-500 to-emerald-600',
+            stats: '156 total',
+        },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
+        <div className="min-h-screen p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">
-                        Bienvenido, {user?.userName} {/* ← CAMBIAR AQUÍ */}
-                    </h1>
-                    <p className="text-gray-600 mt-2">Dashboard de Estudiante</p>
+                {/* Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8 relative overflow-hidden bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-white/10 rounded-2xl p-8 backdrop-blur-sm"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5" />
+                    <div className="relative">
+                        <h1 className="text-4xl font-black text-white mb-2">
+                            Welcome back, {user?.userName}
+                        </h1>
+                        <p className="text-cyan-400">Continue your database learning journey</p>
+                    </div>
+                </motion.div>
+
+                {/* Quick Actions */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    {quickActions.map((action, index) => (
+                        <Link key={index} href={action.href}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ y: -5, scale: 1.02 }}
+                                className="relative group h-full"
+                            >
+                                <div className="absolute inset-0 bg-white/[0.03] border border-white/10 rounded-xl backdrop-blur-sm group-hover:border-cyan-500/30 transition-all" />
+                                <div className="relative p-8">
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className={`w-16 h-16 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center text-white text-2xl shadow-lg`}>
+                                            {action.icon}
+                                        </div>
+                                        <span className="px-3 py-1 bg-white/5 border border-white/10 text-gray-400 text-xs font-mono rounded-full">
+                                            {action.stats}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">{action.title}</h3>
+                                    <p className="text-gray-400 mb-4">{action.description}</p>
+                                    <div className="flex items-center text-cyan-400 text-sm font-medium">
+                                        Get Started
+                                        <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </Link>
+                    ))}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <Link href={ROUTES.STUDENT_EXECUTE}>
-                        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                            <div className="flex items-center">
-                                <div className="p-3 bg-blue-100 rounded-lg">
-                                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-4">
-                                    <h3 className="text-lg font-semibold">Ejecutar Query</h3>
-                                    <p className="text-gray-600 text-sm">Ejecuta consultas SQL</p>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
+                {/* Database Instances */}
+                <div className="bg-white/[0.02] border border-white/10 rounded-xl backdrop-blur-sm p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">Your Databases</h2>
+                            <p className="text-gray-400 text-sm mt-1">Instances assigned to you</p>
+                        </div>
+                        <HiOutlineCircleStack className="text-3xl text-cyan-400" />
+                    </div>
 
-                    <Link href={ROUTES.STUDENT_QUERIES}>
-                        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                            <div className="flex items-center">
-                                <div className="p-3 bg-green-100 rounded-lg">
-                                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-4">
-                                    <h3 className="text-lg font-semibold">Mis Queries</h3>
-                                    <p className="text-gray-600 text-sm">Historial de consultas</p>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
-                </div>
-
-                <Card title="Mis Instancias de Base de Datos">
                     {isLoading ? (
-                        <p className="text-gray-600">Cargando...</p>
+                        <div className="space-y-4">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-24 bg-white/[0.02] rounded-lg animate-pulse" />
+                            ))}
+                        </div>
                     ) : instances.length === 0 ? (
-                        <p className="text-gray-600">No tienes instancias asignadas</p>
+                        <div className="text-center py-12">
+                            <HiOutlineCommandLine className="text-6xl text-gray-600 mx-auto mb-4" />
+                            <p className="text-gray-400 text-lg mb-2">No instances assigned yet</p>
+                            <p className="text-gray-500 text-sm">Contact your instructor for access</p>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {instances.map((instance) => (
-                                <div
+                            {instances.map((instance, index) => (
+                                <motion.div
                                     key={instance.id}
-                                    className="border border-gray-200 rounded-lg p-4 hover:border-blue-500 transition-colors"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    whileHover={{ y: -3 }}
+                                    className="relative group"
                                 >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h4 className="font-semibold text-lg">{instance.name}</h4>
-                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                                            {instance.type}
-                                        </span>
+                                    <div className="absolute inset-0 bg-white/[0.03] border border-white/10 rounded-lg group-hover:border-cyan-500/30 transition-all" />
+                                    <div className="relative p-5">
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-bold text-white mb-1">{instance.name}</h4>
+                                                {instance.description && (
+                                                    <p className="text-gray-400 text-sm">{instance.description}</p>
+                                                )}
+                                            </div>
+                                            <span className="px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs rounded font-mono">
+                                                {instance.type}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-xs">
+                                            <div className="flex items-center">
+                                                <div className={`w-2 h-2 rounded-full mr-2 ${instance.isActive ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                                                <span className="text-gray-400">
+                                                    {instance.isActive ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center text-gray-500">
+                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                {new Date(instance.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
                                     </div>
-                                    {instance.description && (
-                                        <p className="text-gray-600 text-sm">{instance.description}</p>
-                                    )}
-                                    <div className="mt-2 flex items-center">
-                                        <span className={`w-2 h-2 rounded-full ${instance.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-                                        <span className="ml-2 text-sm text-gray-600">
-                                            {instance.isActive ? 'Activa' : 'Inactiva'}
-                                        </span>
-                                    </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     )}
-                </Card>
+                </div>
             </div>
         </div>
     );

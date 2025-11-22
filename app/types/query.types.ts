@@ -1,18 +1,18 @@
 export interface Query {
   id: string;
-  studentId: string;
-  instanceId: string;
   sqlQuery: string;
   status: 'pending' | 'executed' | 'failed';
   result?: QueryResult;
   error?: string;
-  executedAt?: string;
   createdAt: string;
+  updatedAt?: string;
+  instanceId?: string;
+  userId?: string;
 }
 
 export interface QueryResult {
   columns: string[];
-  rows: Record<string, unknown>[]; // Cambiado de any[]
+  rows: Record<string, unknown>[];
   rowCount: number;
   executionTime: number;
 }
@@ -22,8 +22,7 @@ export interface ExecuteQueryRequest {
   query: string;
 }
 
-export interface CreateQueryRequest {
-  instanceId: string;
-  sqlQuery: string;
-  description?: string;
+export interface ExecuteQueryResponse extends QueryResult {
+  id?: string;
+  status: string;
 }

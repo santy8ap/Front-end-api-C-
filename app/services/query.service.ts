@@ -1,43 +1,77 @@
 import api from './api';
-import { Query, ExecuteQueryRequest, CreateQueryRequest, QueryResult } from '../types/query.types';
-import { QueryServiceMock } from './query.service.mock';
+import { Query, ExecuteQueryRequest, QueryResult } from '../types/query.types';
+import { AxiosError } from 'axios';
 
-const USE_MOCK = true; // ← ASEGÚRATE QUE ESTÉ EN true
+const USE_MOCK = false;
 
 export class QueryService {
   static async executeQuery(data: ExecuteQueryRequest): Promise<QueryResult> {
-    if (USE_MOCK) {
-      console.log('🔶 Ejecutando Query con MOCK');
-      return QueryServiceMock.executeQuery(data);
+    try {
+      const response = await api.post<QueryResult>('/queries/execute', data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('❌ Error ejecutando query:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido ejecutando query:', error);
+      }
+      throw error;
     }
-    const response = await api.post<QueryResult>('/queries/execute', data);
-    return response.data;
   }
 
-  static async createQuery(data: CreateQueryRequest): Promise<Query> {
-    if (USE_MOCK) return QueryServiceMock.createQuery(data);
-    const response = await api.post<Query>('/queries', data);
-    return response.data;
+  static async createQuery(data: Omit<Query, 'id' | 'createdAt'>): Promise<Query> {
+    try {
+      const response = await api.post<Query>('/queries', data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('❌ Error creando query:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido creando query:', error);
+      }
+      throw error;
+    }
   }
 
   static async getStudentQueries(): Promise<Query[]> {
-    if (USE_MOCK) {
-      console.log('🔶 Obteniendo Queries con MOCK');
-      return QueryServiceMock.getStudentQueries();
+    try {
+      const response = await api.get<Query[]>('/queries/student');
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('❌ Error obteniendo queries del estudiante:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido obteniendo queries del estudiante:', error);
+      }
+      throw error;
     }
-    const response = await api.get<Query[]>('/queries/student');
-    return response.data;
   }
 
   static async getQueryById(id: string): Promise<Query> {
-    if (USE_MOCK) return QueryServiceMock.getQueryById(id);
-    const response = await api.get<Query>(`/queries/${id}`);
-    return response.data;
+    try {
+      const response = await api.get<Query>(`/queries/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('❌ Error obteniendo query:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido obteniendo query:', error);
+      }
+      throw error;
+    }
   }
 
   static async getAllQueries(): Promise<Query[]> {
-    if (USE_MOCK) return QueryServiceMock.getAllQueries();
-    const response = await api.get<Query[]>('/queries');
-    return response.data;
+    try {
+      const response = await api.get<Query[]>('/queries');
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error('❌ Error obteniendo todas las queries:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido obteniendo todas las queries:', error);
+      }
+      throw error;
+    }
   }
 }
